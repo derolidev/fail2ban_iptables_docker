@@ -20,7 +20,7 @@ RETURN     all  --  anywhere             anywhere
 ```
 
 If a packet reaches the `INPUT` chain, the packet filter jumps to the chain `f2b-sshd` - if no other blocking rule was found before. If no rule is found there that blocks the packet, the packet is finally accepted. If a blocking rule was found in `f2b-sshd`, the packet is rejected.
-The same logic is applied to other filters. So it makes no difference if it is the chain `f2b-nginx`, `f2b-dovcot` or another chain created by fail2ban.
+The same logic is applied to other filters. So it makes no difference if it is the chain `f2b-nginx`, `f2b-dovecot` or another chain created by fail2ban.
 
 ## Problem
 Incoming packets for Docker containers are handled by the `FORWARD` chain rather than the `INPUT` chain, so the rules in the `INPUT` chain have no relevance to fail2ban and Docker containers. However, we may also want to block packets from blocked clients for Docker containers.
