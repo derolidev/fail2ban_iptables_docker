@@ -1,0 +1,17 @@
+[DEFAULT]
+# Just a minimum of configuration. There is a lot more
+# that you want to configure
+action = iptables-allports-with-docker
+
+# Just two jails as example below
+[sshd]
+enable  = true
+port    = 22
+logpath = /var/log/auth.log
+filter  = sshd
+
+[nginx-http-auth]
+enable  = true
+port    = 80, 443
+logpath = /var/log/syslog
+filter  = nginx-http-auth
