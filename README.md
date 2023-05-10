@@ -41,10 +41,36 @@ ACCEPT       all  --  anywhere             anywhere
 ```
 
 ## Solution
-Using the existing action iptables-allports.conf as an example, a new action iptables-allports-with-docker.conf was created.  
-`actionstart` has been extended with `<iptables> -N DOCKER-USER` and `<iptables> -I DOCKER-USER -j f2b-<name>`. `<iptables> -N DOCKER-USER` first creates the chain `DOCKER-USER`, since fail2ban is usually started before fail2ban and this chain therefore does not yet exist. `<iptables> -I DOCKER-USER -j f2b-<name>` creates a target in the chain `DOCKER-USER` to the corresponding chain `f2b-<name>` created before.  
+Using the existing action iptables-allports.conf as an example, a new action iptables-allports-with-docker.local was created.  
+`actionstart` has been extended with `<iptables> -N DOCKER-USER` and `<iptables> -I DOCKER-USER -j f2b-<name>`. `<iptables> -N DOCKER-USER` first creates the chain `DOCKER-USER`, since fail2ban is usually started before fail2ban and this chain therefore does not yet exist. `<iptables> -I DOCKER-USER -j f2b-<name>` creates a target in the chain `DOCKER-USER` to the corresponding chain `f2b-<name>` created before.
   
 `actionstop` has been extended by `<iptables> -D DOCKER-USER -j f2b-<name>` so that the target on the previously deleted chain is removed from the chain DOCKER-USER again.
 
+```text
+Chain INPUT (policy ACCEPT)
+target     prot opt source               destination
+f2b-sshd   tcp  --  anywhere             anywhere
+
+Chain FORWARD (policy DROP)
+target     prot opt source               destination         
+DOCKER-USER  all  --  anywhere             anywhere            
+DOCKER-ISOLATION-STAGE-1  all  --  anywhere             anywhere            
+
+Chain DOCKER-USER (1 references)
+target     prot opt source               destination
+f2b-sshd   all  --  anywhere             anywhere
+RETURN     all  --  anywhere             anywhere
+
+Chain f2b-sshd (2 references)
+target     prot opt source               destination         
+
+REJECT     all  --  186.67.248.6         anywhere             reject-with icmp-port-unreachable
+REJECT     all  --  171.111.192.1        anywhere             reject-with icmp-port-unreachable
+REJECT     all  --  165.22.62.225        anywhere             reject-with icmp-port-unreachable
+REJECT     all  --  165.22.22.227        anywhere             reject-with icmp-port-unreachable
+RETURN     all  --  anywhere             anywhere
+
+```
+
 ## Conclusion
-With a small adaptation of the existing actions for `iptables`, incoming packets from already blocked IP's can also be blocked for Docker containers without having to hold block twice in another chain.
+With a small adaptation of the existing actions for `iptables`, incoming packets from already blocked IP's can also be blocked for Docker containers without having to hold block twice in another chain. Chain `DOCKER-USER` is simply pointing to the existing chains which are maintained by `fail2ban`.
